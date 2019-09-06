@@ -1,8 +1,10 @@
-FROM debian:stretch
+FROM debian:buster
 LABEL maintainer="Odoo S.A. <info@odoo.com>"
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
+
+RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list && rm -Rf /var/lib/apt/lists/* && apt-get update
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN set -x; \
@@ -29,9 +31,13 @@ RUN set -x; \
         && apt-get -y install -f --no-install-recommends \
         && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
 
+RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ pip -U
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+RUN pip3 install cachetools && pip3 install xlrd && pip3 install openpyxl && pip3 install viivakoodi
+
 # install latest postgresql-client
 RUN set -x; \
-        echo 'deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main' > etc/apt/sources.list.d/pgdg.list \
+        echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > etc/apt/sources.list.d/pgdg.list \
         && export GNUPGHOME="$(mktemp -d)" \
         && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
         && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
@@ -44,7 +50,7 @@ RUN set -x; \
 
 # Install rtlcss (on Debian stretch)
 RUN set -x;\
-    echo "deb http://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list \
+    echo "deb http://deb.nodesource.com/node_8.x buster main" > /etc/apt/sources.list.d/nodesource.list \
     && export GNUPGHOME="$(mktemp -d)" \
     && repokey='9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280' \
     && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
