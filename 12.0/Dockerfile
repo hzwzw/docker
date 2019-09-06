@@ -4,13 +4,13 @@ LABEL maintainer="Odoo S.A. <info@odoo.com>"
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
-RUN echo \
-        deb http://mirrors.aliyun.com/debian buster main contrib non-free
-        deb http://mirrors.aliyun.com/debian buster-proposed-updates main contrib non-free
-        deb http://mirrors.aliyun.com/debian buster-updates main contrib non-free
-        deb http://mirrors.aliyun.com/debian-security/ buster/updates main non-free contrib
-        > /etc/apt/sources.list
-
+#RUN echo \
+#        deb http://mirrors.aliyun.com/debian buster main contrib non-free\
+#        deb http://mirrors.aliyun.com/debian buster-proposed-updates main contrib non-free\
+#        deb http://mirrors.aliyun.com/debian buster-updates main contrib non-free\
+#        deb http://mirrors.aliyun.com/debian-security/ buster/updates main non-free contrib\
+#        > /etc/apt/sources.list
+#RUN apt-get update
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN set -x; \
         apt-get update \
@@ -20,7 +20,7 @@ RUN set -x; \
             dirmngr \
             fonts-noto-cjk \
             gnupg \
-            libssl1.0-dev \
+            libssl-dev \
             node-less \
             python3-pip \
             python3-pyldap \
@@ -38,7 +38,7 @@ RUN set -x; \
 
 RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ pip -U
 RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
-RUN pip3 install cachetools && pip3 install xlrd && pip3 install openpyxl && pip3 install viivakoodi
+RUN pip3 install python-intervals && pip3 install cachetools && pip3 install xlrd && pip3 install openpyxl && pip3 install viivakoodi
 
 # install latest postgresql-client
 RUN set -x; \
@@ -55,7 +55,7 @@ RUN set -x; \
 
 # Install rtlcss (on Debian stretch)
 RUN set -x;\
-    echo "deb http://deb.nodesource.com/node_8.x buster main" > /etc/apt/sources.list.d/nodesource.list \
+    echo "deb http://deb.nodesource.com/node_10.x buster main" > /etc/apt/sources.list.d/nodesource.list \
     && export GNUPGHOME="$(mktemp -d)" \
     && repokey='9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280' \
     && gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}" \
@@ -71,9 +71,9 @@ RUN set -x;\
 ENV ODOO_VERSION 12.0
 ARG ODOO_RELEASE=20190816
 ARG ODOO_SHA=e95cdfe23d16a8572b63bc8d8e8616be5bc18a0a
+COPY ./odoo.deb ./
 RUN set -x; \
-        curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
-        && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
+         echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
         && dpkg --force-depends -i odoo.deb \
         && apt-get update \
         && apt-get -y install -f --no-install-recommends \
@@ -97,7 +97,7 @@ EXPOSE 8069 8071
 ENV ODOO_RC /etc/odoo/odoo.conf
 
 # Set default user when running the container
-USER odoo
+USER root
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
