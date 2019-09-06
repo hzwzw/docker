@@ -4,7 +4,12 @@ LABEL maintainer="Odoo S.A. <info@odoo.com>"
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
-RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list && rm -Rf /var/lib/apt/lists/* && apt-get update
+RUN echo \
+        deb http://mirrors.aliyun.com/debian buster main contrib non-free
+        deb http://mirrors.aliyun.com/debian buster-proposed-updates main contrib non-free
+        deb http://mirrors.aliyun.com/debian buster-updates main contrib non-free
+        deb http://mirrors.aliyun.com/debian-security/ buster/updates main non-free contrib
+        > /etc/apt/sources.list
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN set -x; \
